@@ -8,10 +8,10 @@ sys.stdout.reconfigure(encoding="utf-8")  # biar emoji di pesan sinyal gak crash
 
 from config import WATCHLIST, IPO_WATCH
 from data import fetch_prices
-from screeners import mean_reversal, universe, sector_basket, ipo_momentum, broker_flow
+from screeners import mean_reversal, universe, sector_basket, ipo_momentum, broker_flow, bandar_broksum
 from notify import format_message, send_telegram
 
-SCREENERS = [mean_reversal, universe, sector_basket, ipo_momentum, broker_flow]
+SCREENERS = [mean_reversal, universe, sector_basket, ipo_momentum, broker_flow, bandar_broksum]
 
 # ponytail: Python yang nulis log sendiri (bukan numpang shell "> run.log" di Task Scheduler) - kebukti
 # lebih reliable, shell redirect kemarin gagal pas task di-trigger. RotatingFileHandler biar gak numpuk

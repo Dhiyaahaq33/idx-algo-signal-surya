@@ -87,6 +87,20 @@ BROKER_FLOW_LOOKBACK_DAYS = 10        # berapa hari bursa buat hitung rata-rata 
 BROKER_FLOW_ANOMALY_MULTIPLE = 2.0    # flag kalau value hari ini >= 2x rata-rata broker itu sendiri
 BROKER_FLOW_MIN_BASELINE_VALUE = 1_000_000_000  # skip broker kecil (baseline < 1M supaya gak noise)
 
+# --- Bandarmology / broker summary (algo bandar_broksum) ---
+# ponytail: NVAL gak ada di API publik IDX (lihat broksum_data.py) -> taruh CSV export terminal kamu
+# di folder ini, satu file per hari bursa, nama '<YYYY-MM-DD>.csv'. Header gaya sheet ("CODE, NVAL B,
+# TVAL B, TFREQ K") langsung kebaca apa adanya, satuan diambil dari suffix header.
+BROKSUM_DIR = os.path.join(os.path.dirname(__file__), "broksum")
+BROKSUM_TOP_N = 20                    # ambil top-N net buyer (sheet kamu juga 20)
+
+# ponytail: threshold di bawah ini KIRA-KIRA, diturunin dari sheet 3 Jul 2026 - tune sendiri setelah
+# lihat beberapa hari data. Dengan angka ini yang kena di 3 Jul cuma SS, FS, AI (SS paling kuat:
+# TV/TF 23.03 tertinggi + NV/(TV/TF) 0.93 mepet 1).
+BANDAR_MIN_TV_TF = 10.0               # juta rupiah per transaksi; makin gede makin bandar
+BANDAR_MAX_NV_RATIO = 2.0             # NV/(TV/TF); makin kecil (mepet 1/0) makin terkonsentrasi
+BANDAR_MIN_TVAL_BN = 10.0             # skip broker sepi (TVAL < 10 miliar) biar gak noise
+
 MEAN_REVERSAL_LOOKBACK_DAYS = 20
 MEAN_REVERSAL_DROP_THRESHOLD = 0.15   # flag kalau harga >15% di bawah rolling high
 UNIVERSE_MOVE_THRESHOLD = 0.05        # anggota grup lain naik/turun >5%
