@@ -109,3 +109,8 @@ SECTOR_LOOKBACK_DAYS = 5
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+
+# ponytail: token JWT Stockbit buat narik NVAL per broker (lihat stockbit_data.py). Harus di-copy
+# manual dari DevTools dan umurnya cuma ~24 jam - login Stockbit di-CAPTCHA jadi gak bisa otomatis.
+# Kosongin aja kalau lagi pakai jalur CSV manual; algo bandar_broksum tetap jalan dari broksum/.
+STOCKBIT_TOKEN = os.environ.get("STOCKBIT_TOKEN", "")

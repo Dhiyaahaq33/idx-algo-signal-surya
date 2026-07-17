@@ -183,6 +183,44 @@ def test_broksum_csv_parses_id_number_format_and_negatives():
     assert r["tfreq"] == 1500
 
 
+def test_stockbit_parser_feeds_metrics_with_sheet_numbers():
+    # bentuk JSON-nya masih tebakan (recon kena 401), tapi kontraknya jelas: apa pun yang keluar
+    # _parse_rows() harus bisa langsung masuk compute_metrics() dan ngasih angka yang sama kayak sheet.
+    import stockbit_data
+    payload = {"data": {"brokers": [
+        {"broker_code": "kz", "net_value": 293.31e9, "total_value": 364.48e9, "total_frequency": 18550},
+        {"brokerCode": "SS", "netValue": 21.44e9, "totalValue": 73.24e9, "totalFrequency": 3180},
+    ]}}
+    rows = stockbit_data._parse_rows(payload)
+    assert rows[0]["code"] == "KZ"  # dinormalin ke huruf besar
+
+    metrics = {r["code"]: r for r in bandar_broksum.compute_metrics(rows)}
+    assert abs(metrics["KZ"]["tv_tf"] - 19.64851752) < 1e-6
+    assert abs(metrics["SS"]["nv_per_tvtf"] - 0.9309011469) < 1e-6
+
+
+def test_stockbit_parser_raises_on_unknown_shape():
+    # KRUSIAL: bentuk gak dikenal harus MELEDAK, bukan balik list kosong - list kosong kebaca
+    # "gak ada sinyal hari ini" dan salahnya gak keliatan berhari-hari.
+    import stockbit_data
+    try:
+        stockbit_data._parse_rows({"weird": {"nested": 1}})
+    except RuntimeError:
+        pass
+    else:
+        assert False, "harusnya raise, bukan diam-diam balik kosong"
+
+
+def test_stockbit_rejects_expired_token():
+    import stockbit_data
+    try:
+        stockbit_data._check_auth({"error_type": "UNAUTHORIZED", "message": "Unauthorized"})
+    except RuntimeError as e:
+        assert "24 jam" in str(e)  # pesannya harus nunjukin cara benerin
+    else:
+        assert False, "token ditolak harusnya raise"
+
+
 if __name__ == "__main__":
     test_mean_reversal_flags_drop_then_reversal()
     test_mean_reversal_ignores_no_reversal()
@@ -199,4 +237,7 @@ if __name__ == "__main__":
     test_bandar_skips_zero_frequency()
     test_broksum_csv_reads_sheet_style_header_and_units()
     test_broksum_csv_parses_id_number_format_and_negatives()
+    test_stockbit_parser_feeds_metrics_with_sheet_numbers()
+    test_stockbit_parser_raises_on_unknown_shape()
+    test_stockbit_rejects_expired_token()
     print("all screener tests passed")
