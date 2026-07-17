@@ -26,6 +26,12 @@ def _fmt_broker_flow(s):
     return f"• <b>{code}</b> ({name}) — {s['today_value_bn']}M vs avg {s['avg_value_bn']}M ({s['multiple']}x)"
 
 
+def _fmt_bandar_broksum(s):
+    code = s["ticker"].removeprefix("broker:")
+    return (f"• <b>{code}</b> #{s['rank_nval']} net buy — NVAL {s['nval_bn']}M | "
+            f"TV/TF {s['tv_tf']} jt/trx | NV/(TV/TF) <b>{s['nv_per_tvtf']}</b>")
+
+
 # urutan tampil + judul + formatter per algoritma
 ALGO_SECTIONS = [
     ("mean_reversal", "🔁 Mean Reversal", _fmt_mean_reversal),
@@ -33,6 +39,7 @@ ALGO_SECTIONS = [
     ("sector_basket", "🧺 Golden Basket", _fmt_sector_basket),
     ("ipo_momentum", "🚀 Momentum IPO", _fmt_ipo_momentum),
     ("broker_flow", "🕵️ Broker Anomali (proxy Sun Reversal)", _fmt_broker_flow),
+    ("bandar_broksum", "🐋 Bandar Broksum (TV/TF tinggi + NV/(TV/TF) rendah)", _fmt_bandar_broksum),
 ]
 
 
