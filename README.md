@@ -110,6 +110,32 @@ Jalankan test screener (data harga sintetis, tanpa perlu koneksi internet):
 python test_screeners.py
 ```
 
+## Jalan Otomatis di GitHub Actions (tanpa PC nyala)
+
+Selain jalan lokal, bot ini bisa dijadwalkan lewat GitHub Actions (`.github/workflows/daily-signal.yml`) — jalan tiap hari bursa jam 16:30 WIB di server GitHub, tidak perlu PC/laptop kamu nyala. Trigger manual juga bisa lewat tab **Actions > Daily IDX Signal Run > Run workflow**.
+
+Setup:
+
+1. Push repo ini ke GitHub (kalau belum).
+2. Di **Settings > Secrets and variables > Actions**, tambahkan repository secrets:
+   - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — sama seperti isi `.env` lokal.
+   - `GOOGLE_SHEETS_CREDENTIALS_JSON` (opsional) — isi JSON key service account Google Cloud (lihat bagian di bawah).
+   - `GOOGLE_SHEET_ID` (opsional) — ID spreadsheet tujuan, diambil dari URL sheet (`.../d/<ID>/edit`).
+3. Kalau `GOOGLE_SHEETS_CREDENTIALS_JSON`/`GOOGLE_SHEET_ID` tidak diisi, langkah push-ke-Sheets otomatis di-skip (bot tetap jalan normal, kirim ke Telegram saja).
+
+`signal.log` sengaja tidak ikut ter-commit ke git (lihat `.gitignore`) — di Actions, riwayatnya dipertahankan lewat GitHub Actions cache antar-run, supaya `view_log.py streak`/`watch` tetap punya histori walau runner-nya baru tiap kali.
+
+### Push hasil sinyal ke Google Sheets
+
+Tiap run menambah baris baru ke tab `Signals` di spreadsheet (kolom: `date`, `algo`, `ticker`, `details`). Ini dipakai supaya data sinyal bisa dibaca otomasi lain (mis. Gemini Spark) tanpa perlu akses langsung ke repo/log.
+
+Cara bikin service account:
+
+1. Buat project di [Google Cloud Console](https://console.cloud.google.com/), aktifkan **Google Sheets API**.
+2. Buat **Service Account**, generate key JSON.
+3. Buat Google Sheet baru, share ke email service account (`...@<project>.iam.gserviceaccount.com`) dengan akses **Editor**.
+4. Isi `GOOGLE_SHEETS_CREDENTIALS_JSON` (seluruh isi file JSON, satu baris) dan `GOOGLE_SHEET_ID` (dari URL sheet) di GitHub Secrets (untuk Actions) atau `.env` (untuk lokal).
+
 ## Disclaimer
 
 Project ini dibuat untuk keperluan riset dan otomatisasi pribadi. Sinyal yang dihasilkan bersifat teknikal/statistik sederhana berdasarkan data harga historis dan data broker summary publik — **bukan rekomendasi atau saran finansial**. Selalu lakukan riset dan cross-check mandiri sebelum mengambil keputusan investasi/trading. Penggunaan sepenuhnya menjadi tanggung jawab pengguna.

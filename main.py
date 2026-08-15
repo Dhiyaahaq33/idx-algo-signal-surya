@@ -10,6 +10,7 @@ from config import WATCHLIST, IPO_WATCH
 from data import fetch_prices
 from screeners import mean_reversal, universe, sector_basket, ipo_momentum, broker_flow
 from notify import format_message, send_telegram
+from sheets_export import push_signals
 
 SCREENERS = [mean_reversal, universe, sector_basket, ipo_momentum, broker_flow]
 
@@ -62,6 +63,9 @@ def run(target_date=None, notify=True):
         send_telegram(message)
     else:
         log.info("[3/3] Skip kirim Telegram (backfill mode).")
+
+    push_signals(signals, date_label=data_as_of)
+
     log.info("Selesai.")
     return signals
 

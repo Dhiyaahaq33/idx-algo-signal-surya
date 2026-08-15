@@ -1,0 +1,38 @@
+name: Daily IDX Signal Run
+
+on:
+  schedule:
+    # 09:30 UTC = 16:30 WIB, Senin-Jumat (setelah bursa IDX tutup ~16:00 WIB)
+    - cron: "30 9 * * 1-5"
+  workflow_dispatch: {}
+
+jobs:
+  run-screener:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # signal.log sengaja gak masuk git (lihat .gitignore) - dipertahankan lewat Actions
+      # cache antar-run biar view_log.py (streak/watch) tetap punya riwayat, bukan reset tiap run.
+      - name: Restore signal.log dari cache run sebelumnya
+        uses: actions/cache@v4
+        with:
+          path: signal.log
+          key: signal-log-${{ github.run_id }}
+          restore-keys: |
+            signal-log-
+
+      - name: Run screening
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+        run: python main.py
