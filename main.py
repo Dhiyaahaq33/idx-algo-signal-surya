@@ -9,7 +9,7 @@ sys.stdout.reconfigure(encoding="utf-8")  # biar emoji di pesan sinyal gak crash
 from config import WATCHLIST, IPO_WATCH
 from data import fetch_prices
 from screeners import mean_reversal, universe, sector_basket, ipo_momentum, broker_flow
-from notify import format_message, send_telegram
+from notify import format_message, send_telegram, send_whatsapp
 from sheets_export import push_signals
 
 SCREENERS = [mean_reversal, universe, sector_basket, ipo_momentum, broker_flow]
@@ -59,10 +59,11 @@ def run(target_date=None, notify=True):
     message = format_message(signals, date_label=data_as_of)
     log.info(message)
     if notify:
-        log.info("[3/3] Mengirim ke Telegram...")
+        log.info("[3/3] Mengirim ke Telegram & WhatsApp...")
         send_telegram(message)
+        send_whatsapp(message)
     else:
-        log.info("[3/3] Skip kirim Telegram (backfill mode).")
+        log.info("[3/3] Skip kirim Telegram/WhatsApp (backfill mode).")
 
     push_signals(signals, date_label=data_as_of)
 
