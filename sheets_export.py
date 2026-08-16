@@ -1,9 +1,20 @@
+import datetime
 import logging
 import os
 
 log = logging.getLogger("idx-algo-signal")
 
 HEADER = ["Tanggal", "Algoritma", "Ticker", "Keterangan"]
+
+# epoch tanggal Google Sheets (serial 0 = 30 Des 1899) - dipakai supaya kolom Tanggal tersimpan
+# sebagai angka tanggal ASLI (bisa di-sort kronologis, bisa diformat dd/mm), bukan teks yang
+# auto-parse-nya Sheets gak reliable buat string ISO "YYYY-MM-DD" tergantung locale spreadsheet.
+_SHEETS_EPOCH = datetime.date(1899, 12, 30)
+
+
+def _to_sheets_date_serial(date_label):
+    d = datetime.datetime.strptime(date_label, "%Y-%m-%d").date()
+    return (d - _SHEETS_EPOCH).days
 
 ALGO_LABELS = {
     "mean_reversal": "🔁 Mean Reversal",
@@ -63,18 +74,22 @@ def _get_client():
 def _get_or_init_worksheet(spreadsheet):
     try:
         worksheet = spreadsheet.worksheet("Signals")
-        return worksheet
     except Exception:
-        pass
+        worksheet = spreadsheet.add_worksheet(title="Signals", rows=1000, cols=len(HEADER))
 
-    worksheet = spreadsheet.add_worksheet(title="Signals", rows=1000, cols=len(HEADER))
-    worksheet.append_row(HEADER)
-    worksheet.format("A1:D1", {
-        "textFormat": {"bold": True},
-        "backgroundColor": {"red": 0.85, "green": 0.85, "blue": 0.85},
-    })
-    worksheet.freeze(rows=1)
-    worksheet.columns_auto_resize(0, len(HEADER) - 1)
+    # header/format juga perlu di-setup ulang kalau sheet-nya ada tapi kosong (mis. abis di-clear manual)
+    if worksheet.row_values(1) != HEADER:
+        worksheet.clear()
+        worksheet.append_row(HEADER)
+        worksheet.format("A1:D1", {
+            "textFormat": {"bold": True},
+            "backgroundColor": {"red": 0.85, "green": 0.85, "blue": 0.85},
+        })
+        # kolom A disimpan sebagai serial tanggal asli (biar bisa di-sort bener), cuma DITAMPILKAN dd/mm
+        worksheet.format("A2:A1000", {"numberFormat": {"type": "DATE", "pattern": "dd/mm"}})
+        worksheet.freeze(rows=1)
+        worksheet.columns_auto_resize(0, len(HEADER) - 1)
+
     return worksheet
 
 
@@ -98,11 +113,17 @@ def push_signals(signals, date_label):
         log.info("      -> Push ke Google Sheets: 0 sinyal, tidak ada baris ditambahkan")
         return
 
+    date_serial = _to_sheets_date_serial(date_label)
     rows = []
     for s in signals:
         algo_label = ALGO_LABELS.get(s.get("algo"), s.get("algo", ""))
-        rows.append([date_label, algo_label, _display_ticker(s), _describe(s)])
+        rows.append([date_serial, algo_label, _display_ticker(s), _describe(s)])
 
     worksheet.append_rows(rows, value_input_option="RAW")
+
+    last_row = len(worksheet.get_all_values())
+    if last_row > 2:
+        worksheet.sort((1, "asc"), range=f"A2:D{last_row}")
+
     worksheet.columns_auto_resize(0, len(HEADER) - 1)
-    log.info(f"      -> Push ke Google Sheets: {len(rows)} baris ditambahkan")
+    log.info(f"      -> Push ke Google Sheets: {len(rows)} baris ditambahkan, sheet di-sort ulang per tanggal")
