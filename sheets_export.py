@@ -93,28 +93,47 @@ def _get_or_init_worksheet(spreadsheet):
     return worksheet
 
 
-_MONTH_START_COLOR = {"red": 1.0, "green": 0.95, "blue": 0.8}  # kuning tipis
-_NO_COLOR = {"red": 1.0, "green": 1.0, "blue": 1.0}
+_MONTH_START_COLOR = {"red": 1.0, "green": 0.95, "blue": 0.8}  # kuning tipis, nandain awal bulan
+_DAY_BAND_COLORS = [
+    {"red": 1.0, "green": 1.0, "blue": 1.0},      # putih
+    {"red": 0.93, "green": 0.95, "blue": 0.98},   # abu-biru tipis
+]
 
 
-def _highlight_month_starts(worksheet, last_row):
-    """Kasih warna tipis ke baris tanggal pertama tiap bulan baru (dibanding baris sebelumnya),
-    berdasarkan urutan sheet yang udah di-sort kronologis. Reset dulu semua row biar idempotent
-    kalau baris yang tadinya jadi "awal bulan" berubah posisi gara-gara ada backfill di antaranya."""
+def _style_rows_by_day(worksheet, last_row):
+    """Selang-seling warna tiap ganti tanggal (zebra per hari, bukan per baris), dan tetap nandain
+    awal bulan dengan warna kuning tipis (nimpa warna zebra-nya) biar tetap paling nonjol. Jalan
+    tiap push, berdasarkan urutan sheet yang udah di-sort kronologis - full reset & re-derive biar
+    idempotent walau ada backfill yang nyisip di tengah bikin urutan/grouping berubah."""
     if last_row <= 2:
         return
 
     serials = worksheet.get(f"A2:A{last_row}", value_render_option="UNFORMATTED_VALUE")
     dates = [_SHEETS_EPOCH + datetime.timedelta(days=int(row[0])) for row in serials if row]
 
-    worksheet.format(f"A2:D{last_row}", {"backgroundColor": _NO_COLOR})
-
-    prev_month = None
+    # kelompokin baris-baris yang tanggalnya sama jadi satu run (start_row, end_row, date)
+    runs = []
     for i, d in enumerate(dates):
         sheet_row = i + 2
-        if prev_month != (d.year, d.month):
-            worksheet.format(f"A{sheet_row}:D{sheet_row}", {"backgroundColor": _MONTH_START_COLOR})
-        prev_month = (d.year, d.month)
+        if runs and runs[-1]["date"] == d:
+            runs[-1]["end"] = sheet_row
+        else:
+            runs.append({"date": d, "start": sheet_row, "end": sheet_row})
+
+    formats = []
+    band = 0
+    prev_month = None
+    for run in runs:
+        is_month_start = prev_month != (run["date"].year, run["date"].month)
+        color = _MONTH_START_COLOR if is_month_start else _DAY_BAND_COLORS[band % 2]
+        formats.append({
+            "range": f"A{run['start']}:D{run['end']}",
+            "format": {"backgroundColor": color},
+        })
+        prev_month = (run["date"].year, run["date"].month)
+        band += 1
+
+    worksheet.batch_format(formats)
 
 
 def push_signals(signals, date_label):
@@ -149,6 +168,6 @@ def push_signals(signals, date_label):
     if last_row > 2:
         worksheet.sort((1, "asc"), range=f"A2:D{last_row}")
 
-    _highlight_month_starts(worksheet, last_row)
+    _style_rows_by_day(worksheet, last_row)
     worksheet.columns_auto_resize(0, len(HEADER) - 1)
-    log.info(f"      -> Push ke Google Sheets: {len(rows)} baris ditambahkan, sheet di-sort ulang & awal bulan ditandai")
+    log.info(f"      -> Push ke Google Sheets: {len(rows)} baris ditambahkan, sheet di-sort ulang & diwarnai per hari")
