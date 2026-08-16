@@ -4,7 +4,12 @@ on:
   schedule:
     # 09:30 UTC = 16:30 WIB, Senin-Jumat (setelah bursa IDX tutup ~16:00 WIB)
     - cron: "30 9 * * 1-5"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Tanggal analisis (YYYY-MM-DD) - kosongin buat data terbaru"
+        required: false
+        default: ""
 
 jobs:
   run-screener:
@@ -35,4 +40,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-        run: python main.py
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            python main.py "${{ github.event.inputs.date }}"
+          else
+            python main.py
+          fi
