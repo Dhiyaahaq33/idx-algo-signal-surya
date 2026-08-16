@@ -93,6 +93,30 @@ def _get_or_init_worksheet(spreadsheet):
     return worksheet
 
 
+_MONTH_START_COLOR = {"red": 1.0, "green": 0.95, "blue": 0.8}  # kuning tipis
+_NO_COLOR = {"red": 1.0, "green": 1.0, "blue": 1.0}
+
+
+def _highlight_month_starts(worksheet, last_row):
+    """Kasih warna tipis ke baris tanggal pertama tiap bulan baru (dibanding baris sebelumnya),
+    berdasarkan urutan sheet yang udah di-sort kronologis. Reset dulu semua row biar idempotent
+    kalau baris yang tadinya jadi "awal bulan" berubah posisi gara-gara ada backfill di antaranya."""
+    if last_row <= 2:
+        return
+
+    serials = worksheet.get(f"A2:A{last_row}", value_render_option="UNFORMATTED_VALUE")
+    dates = [_SHEETS_EPOCH + datetime.timedelta(days=int(row[0])) for row in serials if row]
+
+    worksheet.format(f"A2:D{last_row}", {"backgroundColor": _NO_COLOR})
+
+    prev_month = None
+    for i, d in enumerate(dates):
+        sheet_row = i + 2
+        if prev_month != (d.year, d.month):
+            worksheet.format(f"A{sheet_row}:D{sheet_row}", {"backgroundColor": _MONTH_START_COLOR})
+        prev_month = (d.year, d.month)
+
+
 def push_signals(signals, date_label):
     """Append tiap sinyal sebagai baris baru ke Google Sheet (tab 'Signals'), dalam bentuk keterangan
     yang enak dibaca (bukan JSON mentah) - biar bisa dipahami langsung tanpa parsing tambahan.
@@ -125,5 +149,6 @@ def push_signals(signals, date_label):
     if last_row > 2:
         worksheet.sort((1, "asc"), range=f"A2:D{last_row}")
 
+    _highlight_month_starts(worksheet, last_row)
     worksheet.columns_auto_resize(0, len(HEADER) - 1)
-    log.info(f"      -> Push ke Google Sheets: {len(rows)} baris ditambahkan, sheet di-sort ulang per tanggal")
+    log.info(f"      -> Push ke Google Sheets: {len(rows)} baris ditambahkan, sheet di-sort ulang & awal bulan ditandai")
