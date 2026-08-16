@@ -40,6 +40,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          FONNTE_TOKEN: ${{ secrets.FONNTE_TOKEN }}
+          FONNTE_TARGET: ${{ secrets.FONNTE_TARGET }}
         run: |
           if [ -n "${{ github.event.inputs.date }}" ]; then
             python main.py "${{ github.event.inputs.date }}"
