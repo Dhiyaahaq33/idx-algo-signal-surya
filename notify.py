@@ -74,6 +74,10 @@ def _html_to_whatsapp(message):
 
 
 def send_whatsapp(message):
+    """Fonnte balikin HTTP 200 walau gagal kirim (errornya di body JSON, bukan status code) - jadi
+    raise_for_status() aja gak cukup, harus dicek field "status" di response-nya. Gagal kirim WA
+    sengaja gak di-raise (cuma di-print sebagai warning) biar gak bikin seluruh run gagal gara-gara
+    WhatsApp doang - Telegram & push ke Sheets tetap harus jalan."""
     if not FONNTE_TOKEN or not FONNTE_TARGET:
         print("[notify] FONNTE_TOKEN/FONNTE_TARGET belum diset, skip kirim WhatsApp")
         return
@@ -84,3 +88,7 @@ def send_whatsapp(message):
         data={"target": FONNTE_TARGET, "message": _html_to_whatsapp(message)},
     )
     resp.raise_for_status()
+
+    result = resp.json()
+    if not result.get("status"):
+        print(f"[notify] WARNING: kirim WhatsApp gagal - {result.get('reason', result)}")
