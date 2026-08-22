@@ -1,0 +1,515 @@
+<title>Sinyal Surya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f1ec;
+    --surface: #ffffff;
+    --surface-2: #ebe8e1;
+    --border: #d9d5cb;
+    --text: #1c1a16;
+    --text-dim: #6b6558;
+    --accent: #b9812c;
+    --accent-soft: #f0dfb8;
+    --positive: #2f8a5c;
+    --positive-soft: #dcefe3;
+    --negative: #b8483b;
+    --negative-soft: #f7ded9;
+    --badge-mr-fg: #2a5f8f; --badge-mr-bg: #dee8f2;
+    --badge-un-fg: #6a3e9e; --badge-un-bg: #ece1f5;
+    --badge-gb-fg: #96650f; --badge-gb-bg: #f2e3c4;
+    --badge-ip-fg: #21785a; --badge-ip-bg: #dceee6;
+    --badge-bf-fg: #a3401f; --badge-bf-bg: #f4ded2;
+    --shadow: 0 1px 2px rgba(28,26,22,0.06), 0 8px 24px -12px rgba(28,26,22,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1013;
+      --surface: #161a1f;
+      --surface-2: #1e242b;
+      --border: #2a323c;
+      --text: #e9edf1;
+      --text-dim: #8b96a3;
+      --accent: #d7a34e;
+      --accent-soft: #3a2f1a;
+      --positive: #5cbb8e;
+      --positive-soft: #16281f;
+      --negative: #e28178;
+      --negative-soft: #2c1a17;
+      --badge-mr-fg: #8fbde6; --badge-mr-bg: #1b2a3a;
+      --badge-un-fg: #c6a3ec; --badge-un-bg: #291f38;
+      --badge-gb-fg: #e2bb6a; --badge-gb-bg: #362a13;
+      --badge-ip-fg: #7fd2ac; --badge-ip-bg: #12291f;
+      --badge-bf-fg: #ec9784; --badge-bf-bg: #35201a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -16px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1013;
+    --surface: #161a1f;
+    --surface-2: #1e242b;
+    --border: #2a323c;
+    --text: #e9edf1;
+    --text-dim: #8b96a3;
+    --accent: #d7a34e;
+    --accent-soft: #3a2f1a;
+    --positive: #5cbb8e;
+    --positive-soft: #16281f;
+    --negative: #e28178;
+    --negative-soft: #2c1a17;
+    --badge-mr-fg: #8fbde6; --badge-mr-bg: #1b2a3a;
+    --badge-un-fg: #c6a3ec; --badge-un-bg: #291f38;
+    --badge-gb-fg: #e2bb6a; --badge-gb-bg: #362a13;
+    --badge-ip-fg: #7fd2ac; --badge-ip-bg: #12291f;
+    --badge-bf-fg: #ec9784; --badge-bf-bg: #35201a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -16px rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 16px 96px;
+  }
+
+  header.top {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 18px;
+  }
+  header.top .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  header.top h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  header.top .sub {
+    color: var(--text-dim);
+    font-size: 13.5px;
+    margin-top: 2px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 16px 0 18px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .stat .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .stat .l {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    line-height: 1.25;
+  }
+
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding: 10px 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+  }
+  .search-row input[type="search"] {
+    flex: 1;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 9px;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .search-row input[type="search"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+  select.jump {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 9px;
+    padding: 9px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    max-width: 118px;
+  }
+
+  .chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+  }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .chip[aria-pressed="true"] {
+    color: var(--text);
+    border-color: currentColor;
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+
+  .day {
+    margin-bottom: 22px;
+  }
+  .day-head {
+    position: sticky;
+    top: 93px;
+    z-index: 5;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 0;
+    background: var(--bg);
+  }
+  .day-head .d {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .day-head .wd {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .day-head .count {
+    margin-left: auto;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .day-head.month-start .d { color: var(--accent); }
+  .day-head.month-start::before {
+    content: "";
+    position: absolute;
+    left: -16px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+  .day-head { position: relative; }
+
+  .cards { display: flex; flex-direction: column; gap: 7px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ticker {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 14.5px;
+    letter-spacing: 0.01em;
+  }
+  .badge {
+    margin-left: auto;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.45;
+  }
+  .desc .pos { color: var(--positive); font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+  .desc .neg { color: var(--negative); font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+
+  .empty {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 48px 12px;
+    font-size: 14px;
+  }
+
+  footer {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 10px 16px 28px;
+    color: var(--text-dim);
+    font-size: 11.5px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  footer .warn {
+    color: var(--accent);
+  }
+
+  @media (max-width: 420px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">IDX Algo Signal Surya</div>
+    <h1>Sinyal Surya</h1>
+    <div class="sub">Riwayat sinyal trading harian — cari, filter, scan tanpa scroll chat.</div>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="controls">
+    <div class="search-row">
+      <input type="search" id="search" placeholder="Cari ticker atau kata kunci…" autocomplete="off">
+      <select class="jump mono" id="jump"></select>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div id="list"></div>
+  <div class="empty" id="empty" hidden>Gak ada sinyal yang cocok.</div>
+</div>
+
+<footer>
+  Data ter-generate: <span id="gen-time" class="mono"></span> — auto-update tiap hari bursa selesai.
+</footer>
+
+<script>
+const RAW = /*__DATA__*/;
+const GENERATED_AT = /*__GENERATED_AT__*/;
+
+document.getElementById("gen-time").textContent = GENERATED_AT;
+
+const ALGO_META = {
+  "Mean Reversal":     { key: "mr", cls: "mr" },
+  "Pairs / Universe":  { key: "un", cls: "un" },
+  "Golden Basket":     { key: "gb", cls: "gb" },
+  "Momentum IPO":      { key: "ip", cls: "ip" },
+  "Broker Anomali":    { key: "bf", cls: "bf" },
+};
+function algoName(raw) {
+  return raw.replace(/^\S+\s*/, "").trim();
+}
+function algoMeta(raw) {
+  const name = algoName(raw);
+  for (const k in ALGO_META) if (name.indexOf(k) === 0) return { name: k, ...ALGO_META[k] };
+  return { name, key: "other", cls: "mr" };
+}
+
+const WEEKDAYS = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+
+function toISO(ddmm) {
+  const [d, m] = ddmm.split("/").map(Number);
+  return { y: 2026, m, d, key: `2026-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}` };
+}
+
+// group rows by date, preserving sheet order (already chronological)
+const groups = [];
+let curKey = null;
+for (const row of RAW) {
+  const iso = toISO(row.Tanggal);
+  if (curKey !== iso.key) {
+    groups.push({ iso, rows: [] });
+    curKey = iso.key;
+  }
+  groups[groups.length - 1].rows.push(row);
+}
+
+let prevMonth = null;
+for (const g of groups) {
+  g.isMonthStart = prevMonth !== g.iso.m;
+  prevMonth = g.iso.m;
+  const dt = new Date(g.iso.y, g.iso.m - 1, g.iso.d);
+  g.weekday = WEEKDAYS[dt.getDay()];
+  g.label = `${String(g.iso.d).padStart(2,"0")} ${MONTHS[g.iso.m - 1]}`;
+}
+
+// stats
+const statsEl = document.getElementById("stats");
+const totalSignals = RAW.length;
+const totalDays = groups.length;
+const counts = {};
+RAW.forEach(r => { const m = algoMeta(r.Algoritma); counts[m.name] = (counts[m.name]||0)+1; });
+const topAlgo = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+const first = groups[0], last = groups[groups.length-1];
+statsEl.innerHTML = `
+  <div class="stat"><div class="n">${totalSignals}</div><div class="l">Total sinyal</div></div>
+  <div class="stat"><div class="n">${totalDays}</div><div class="l">Hari bursa</div></div>
+  <div class="stat"><div class="n">${topAlgo ? topAlgo[1] : 0}</div><div class="l">${topAlgo ? topAlgo[0] : "-"}</div></div>
+  <div class="stat"><div class="n mono" style="font-size:13px">${first.label}–${last.label}</div><div class="l">Rentang tanggal</div></div>
+`;
+
+// chips
+const chipsEl = document.getElementById("chips");
+const activeAlgos = new Set(Object.keys(ALGO_META));
+function renderChips() {
+  chipsEl.innerHTML = "";
+  const allChip = document.createElement("button");
+  allChip.className = "chip";
+  allChip.textContent = "Semua";
+  allChip.setAttribute("aria-pressed", activeAlgos.size === Object.keys(ALGO_META).length);
+  allChip.onclick = () => {
+    if (activeAlgos.size === Object.keys(ALGO_META).length) activeAlgos.clear();
+    else Object.keys(ALGO_META).forEach(k => activeAlgos.add(k));
+    renderChips(); render();
+  };
+  chipsEl.appendChild(allChip);
+  for (const name in ALGO_META) {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.setAttribute("aria-pressed", activeAlgos.has(name));
+    chip.style.color = activeAlgos.has(name) ? `var(--badge-${ALGO_META[name].cls}-fg)` : "";
+    chip.innerHTML = `<span class="dot" style="background:var(--badge-${ALGO_META[name].cls}-fg)"></span>${name}`;
+    chip.onclick = () => {
+      if (activeAlgos.has(name)) activeAlgos.delete(name); else activeAlgos.add(name);
+      renderChips(); render();
+    };
+    chipsEl.appendChild(chip);
+  }
+}
+
+// jump dropdown
+const jumpEl = document.getElementById("jump");
+jumpEl.innerHTML = `<option value="">Lompat…</option>` + groups.slice().reverse().map(g =>
+  `<option value="${g.iso.key}">${g.label} (${g.weekday.slice(0,3)})</option>`
+).join("");
+jumpEl.onchange = () => {
+  if (!jumpEl.value) return;
+  const el = document.getElementById("d-" + jumpEl.value);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  jumpEl.value = "";
+};
+
+function highlightPct(text) {
+  return text.replace(/([+-]\d+(?:\.\d+)?%)/g, (m) => {
+    const cls = m.startsWith("-") ? "neg" : "pos";
+    return `<span class="${cls}">${m}</span>`;
+  });
+}
+
+const listEl = document.getElementById("list");
+const emptyEl = document.getElementById("empty");
+const searchEl = document.getElementById("search");
+
+function render() {
+  const q = searchEl.value.trim().toLowerCase();
+  listEl.innerHTML = "";
+  let anyVisible = false;
+
+  for (const g of groups) {
+    const filteredRows = g.rows.filter(r => {
+      const m = algoMeta(r.Algoritma);
+      if (!activeAlgos.has(m.name)) return false;
+      if (!q) return true;
+      return r.Ticker.toLowerCase().includes(q) || r.Keterangan.toLowerCase().includes(q);
+    });
+    if (!filteredRows.length) continue;
+    anyVisible = true;
+
+    const dayEl = document.createElement("div");
+    dayEl.className = "day";
+    dayEl.id = "d-" + g.iso.key;
+
+    const head = document.createElement("div");
+    head.className = "day-head" + (g.isMonthStart ? " month-start" : "");
+    head.innerHTML = `<span class="d">${g.label}</span><span class="wd">${g.weekday}</span><span class="count">${filteredRows.length} sinyal</span>`;
+    dayEl.appendChild(head);
+
+    const cardsEl = document.createElement("div");
+    cardsEl.className = "cards";
+    for (const r of filteredRows) {
+      const m = algoMeta(r.Algoritma);
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-top">
+          <span class="ticker">${r.Ticker}</span>
+          <span class="badge" style="color:var(--badge-${m.cls}-fg);background:var(--badge-${m.cls}-bg)">${m.name}</span>
+        </div>
+        <div class="desc">${highlightPct(r.Keterangan)}</div>
+      `;
+      cardsEl.appendChild(card);
+    }
+    dayEl.appendChild(cardsEl);
+    listEl.appendChild(dayEl);
+  }
+  emptyEl.hidden = anyVisible;
+}
+
+searchEl.addEventListener("input", render);
+renderChips();
+render();
+
+// scroll to most recent day on load
+requestAnimationFrame(() => {
+  const lastDay = document.getElementById("d-" + groups[groups.length-1].iso.key);
+  if (lastDay) lastDay.scrollIntoView({ block: "start" });
+});
+</script>

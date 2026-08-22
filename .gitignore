@@ -14,6 +14,8 @@ secrets.toml
 credentials.json
 token.json
 
+dashboard/output.html
+
 # runtime state / local data
 *.db
 *.sqlite
