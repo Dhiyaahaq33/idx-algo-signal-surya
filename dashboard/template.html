@@ -391,6 +391,9 @@ for (const g of groups) {
   g.label = `${String(g.iso.d).padStart(2,"0")} ${MONTHS[g.iso.m - 1]}`;
 }
 
+// tampil terbaru dulu (isMonthStart tetap dihitung dari urutan kronologis di atas)
+const orderedGroups = groups.slice().reverse();
+
 // stats
 const statsEl = document.getElementById("stats");
 const totalSignals = RAW.length;
@@ -463,7 +466,7 @@ function render() {
   listEl.innerHTML = "";
   let anyVisible = false;
 
-  for (const g of groups) {
+  for (const g of orderedGroups) {
     const filteredRows = g.rows.filter(r => {
       const m = algoMeta(r.Algoritma);
       if (!activeAlgos.has(m.name)) return false;
@@ -506,10 +509,4 @@ function render() {
 searchEl.addEventListener("input", render);
 renderChips();
 render();
-
-// scroll to most recent day on load
-requestAnimationFrame(() => {
-  const lastDay = document.getElementById("d-" + groups[groups.length-1].iso.key);
-  if (lastDay) lastDay.scrollIntoView({ block: "start" });
-});
 </script>
