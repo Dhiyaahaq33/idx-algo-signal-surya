@@ -13,6 +13,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   run-screener:
@@ -65,3 +67,23 @@ jobs:
           git add dashboard/data.json
           git diff --cached --quiet || git commit -m "chore: refresh dashboard data [skip ci]"
           git push
+
+      - name: Build dashboard buat GitHub Pages
+        run: |
+          python dashboard/build.py --generated-at "$(TZ=Asia/Jakarta date +'%Y-%m-%d %H:%M WIB')"
+          mkdir -p public
+          cp dashboard/output.html public/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy-pages:
+    needs: run-screener
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
