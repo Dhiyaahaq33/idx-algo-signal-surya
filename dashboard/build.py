@@ -1,20 +1,13 @@
-"""Regenerate dashboard/output.html from the live "Signals" Google Sheet.
+"""Regenerate dashboard/output.html from dashboard/data.json.
 
-Reads the sheet via its public read-only CSV export (no credentials needed -
-the sheet's "Signals" tab is shared as "anyone with the link, viewer"), splices
-the data into template.html, and writes output.html ready to publish as an
-Artifact. Timestamp is passed in via --generated-at (Date.now()/datetime.now()
-are unreliable in some sandboxed run contexts, so the caller supplies it).
+data.json is committed to the repo by export_data.py (run in GitHub Actions,
+which has real internet access) - this script itself does NO network calls,
+so it works even in a locked-down sandbox (e.g. the scheduled cloud routine
+that rebuilds the published dashboard, whose egress proxy can't reach Google).
 """
 import argparse
-import csv
-import io
 import json
-import urllib.request
 from pathlib import Path
-
-SHEET_ID = "1GMqmLn673TzFLC0qAUVYZCGcD3HmAu3wpIWInDEr7rY"
-CSV_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Signals"
 
 HERE = Path(__file__).parent
 
@@ -28,12 +21,9 @@ def parse_args():
 def main():
     args = parse_args()
 
-    req = urllib.request.Request(CSV_URL, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        content = resp.read().decode("utf-8")
-
-    rows = list(csv.DictReader(io.StringIO(content)))
-    print(f"fetched {len(rows)} rows from sheet")
+    data_path = HERE / "data.json"
+    rows = json.loads(data_path.read_text(encoding="utf-8"))
+    print(f"read {len(rows)} rows from {data_path}")
 
     template = (HERE / "template.html").read_text(encoding="utf-8")
     output = template.replace("/*__DATA__*/", json.dumps(rows, ensure_ascii=False))
