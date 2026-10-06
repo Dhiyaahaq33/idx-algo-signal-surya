@@ -114,3 +114,7 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 # manual dari DevTools dan umurnya cuma ~24 jam - login Stockbit di-CAPTCHA jadi gak bisa otomatis.
 # Kosongin aja kalau lagi pakai jalur CSV manual; algo bandar_broksum tetap jalan dari broksum/.
 STOCKBIT_TOKEN = os.environ.get("STOCKBIT_TOKEN", "")
+
+FONNTE_TOKEN = os.environ.get("FONNTE_TOKEN", "")
+FONNTE_TARGET = os.environ.get("FONNTE_TARGET", "")
+

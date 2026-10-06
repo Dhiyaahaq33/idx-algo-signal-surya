@@ -12,13 +12,20 @@ def parse_args():
     p.add_argument("days", type=int, help="Berapa hari bursa ke belakang (misal 10)")
     p.add_argument("--end-date", default=None, help="Tanggal akhir YYYY-MM-DD, default hari ini")
     p.add_argument("--notify", action="store_true", help="Kirim juga ke Telegram tiap hari (default: cuma log lokal, gak spam Telegram)")
+    p.add_argument(
+        "--calendar-lookback", type=int, default=25,
+        help="Maksimal mundur berapa hari kalender buat nyari `days` hari bursa (default 25, "
+             "naikkan kalau minta backfill jauh ke belakang misal beberapa bulan)",
+    )
     return p.parse_args()
 
 
 def main():
     args = parse_args()
     # ponytail: reuse deteksi hari bursa dari broker_data (skip weekend/libur otomatis) daripada nulis ulang kalender IDX
-    trading_days = sorted(d for d, _ in fetch_recent_broker_summaries(days=args.days, reference_date=args.end_date))
+    trading_days = sorted(d for d, _ in fetch_recent_broker_summaries(
+        days=args.days, reference_date=args.end_date, max_calendar_lookback=args.calendar_lookback,
+    ))
     if not trading_days:
         print("Gak ketemu hari bursa buat range ini.")
         return

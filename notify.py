@@ -1,6 +1,7 @@
 import html
+import re
 import requests
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, FONNTE_TOKEN, FONNTE_TARGET
 
 
 def _fmt_mean_reversal(s):
@@ -71,3 +72,30 @@ def send_telegram(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     resp = requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"})
     resp.raise_for_status()
+
+
+def _html_to_whatsapp(message):
+    """WhatsApp gak ngerti tag HTML kayak Telegram - <b>...</b> jadi *...* (bold ala WA), sisanya di-unescape."""
+    text = re.sub(r"</?b>", "*", message)
+    return html.unescape(text)
+
+
+def send_whatsapp(message):
+    """Fonnte balikin HTTP 200 walau gagal kirim (errornya di body JSON, bukan status code) - jadi
+    raise_for_status() aja gak cukup, harus dicek field "status" di response-nya. Gagal kirim WA
+    sengaja gak di-raise (cuma di-print sebagai warning) biar gak bikin seluruh run gagal gara-gara
+    WhatsApp doang - Telegram & push ke Sheets tetap harus jalan."""
+    if not FONNTE_TOKEN or not FONNTE_TARGET:
+        print("[notify] FONNTE_TOKEN/FONNTE_TARGET belum diset, skip kirim WhatsApp")
+        return
+
+    resp = requests.post(
+        "https://api.fonnte.com/send",
+        headers={"Authorization": FONNTE_TOKEN},
+        data={"target": FONNTE_TARGET, "message": _html_to_whatsapp(message)},
+    )
+    resp.raise_for_status()
+
+    result = resp.json()
+    if not result.get("status"):
+        print(f"[notify] WARNING: kirim WhatsApp gagal - {result.get('reason', result)}")
